@@ -4,5 +4,8 @@
     "organization": "Gareth Redman",
     "description": "Syntax highlighting for C#",
     "version": "1.0",
-    "categories": ["languages"]
+    "categories": ["languages"],
+    "bugs": "https://github.com/gredman/csharp-novaextension/issues",
+    "homepage": "https://github.com/gredman/csharp-novaextension",
+    "repository": "https://github.com/gredman/csharp-novaextension"
 }
