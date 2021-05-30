@@ -1,0 +1,3357 @@
+<syntax name="csharp">
+    <meta>
+        <name>C#</name>
+        <type>compiled</type>
+        <preferred-file-extension>cs</preferred-file-extension>
+        <_disclaimer>Converted from grammar `csharp` in https://github.com/microsoft/vscode.git</_disclaimer>
+    </meta>
+    <detectors>
+        <extension priority="1.0">cs</extension>
+        <extension priority="1.0">csx</extension>
+        <extension priority="1.0">cake</extension>
+    </detectors>
+    <comments>
+        <single>
+            <expression>//</expression>
+        </single>
+        <multiline>
+            <starts-with>
+                <expression>/*</expression>
+            </starts-with>
+            <ends-with>
+                <expression>*/</expression>
+            </ends-with>
+        </multiline>
+    </comments>
+    <brackets>
+        <pair open="{" close="}" />
+        <pair open="[" close="]" />
+        <pair open="(" close=")" />
+    </brackets>
+    <surrounding-pairs>
+        <pair open="{" close="}" />
+        <pair open="[" close="]" />
+        <pair open="(" close=")" />
+        <pair open="&lt;" close="&gt;" />
+        <pair open="&apos;" close="&apos;" />
+        <pair open="&quot;" close="&quot;" />
+    </surrounding-pairs>
+    <scopes>
+        <include syntax="self" collection="preprocessor" />
+        <include syntax="self" collection="comment" />
+        <include syntax="self" collection="directives" />
+        <include syntax="self" collection="declarations" />
+        <include syntax="self" collection="script-top-level" />
+    </scopes>
+    <collections>
+        <collection name="anonymous-method-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:\b(async)\b\s*)?
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+(=&gt;)</expression>
+                    <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    <capture number="2" name="source.cs.entity.name.identifier.argument.cs" />
+                    <capture number="3" name="source.cs.keyword.operator.arrow.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\)|;|}|,)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="ref-modifier" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:\b(async)\b\s*)?
+(\(.*?\))\s*
+(=&gt;)</expression>
+                    <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    <capture number="2" />
+                    <capture number="3" name="source.cs.keyword.operator.arrow.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\)|;|}|,)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="ref-modifier" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:\b(async)\b\s*)?
+(?:\b(delegate)\b\s*)</expression>
+                    <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    <capture number="2" name="source.cs.keyword.other.delegate.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\)|;|}|,)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="anonymous-object-creation-expression">
+            <scope>
+                <starts-with>
+                    <expression>\b(new)\b\s*(?=\{|$)</expression>
+                    <capture number="1" name="source.cs.keyword.other.new.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="initializer-expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="argument">
+            <scope name="source.cs.keyword.modifier.cs">
+                <expression>\b(ref|out|in)\b</expression>
+            </scope>
+            <include syntax="self" collection="declaration-expression-local" />
+            <include syntax="self" collection="expression" />
+        </collection>
+        <collection name="argument-list">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="named-argument" />
+                    <include syntax="self" collection="argument" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="array-creation-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(new|stackalloc)\b\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)?\s*
+(?=\[)</expression>
+                    <capture number="1" name="source.cs.keyword.other.new.cs" />
+                    <capture number="2" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\])</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="bracketed-argument-list" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="as-expression">
+            <scope>
+                <expression>(?x)
+(?&lt;!\.)\b(as)\b\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)?</expression>
+                <capture number="1" name="source.cs.keyword.other.as.cs" />
+                <capture number="2" />
+            </scope>
+        </collection>
+        <collection name="attribute">
+            <include syntax="self" collection="type-name" />
+            <include syntax="self" collection="attribute-arguments" />
+        </collection>
+        <collection name="attribute-arguments">
+            <scope>
+                <starts-with>
+                    <expression>(\()</expression>
+                    <capture number="1" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(\))</expression>
+                    <capture number="1" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="attribute-named-argument" />
+                    <include syntax="self" collection="expression" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="attribute-named-argument">
+            <scope>
+                <starts-with>
+                    <expression>(@?[_[:alpha:]][_[:alnum:]]*)\s*(?==)</expression>
+                    <capture number="1" name="source.cs.entity.name.variable.property.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=(,|\)))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="operator-assignment" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="attribute-section">
+            <scope>
+                <starts-with>
+                    <expression>(\[)(assembly|module|field|event|method|param|property|return|type)?(\:)?</expression>
+                    <capture number="1" name="source.cs.punctuation.squarebracket.open.cs" />
+                    <capture number="2" name="source.cs.keyword.other.attribute-specifier.cs" />
+                    <capture number="3" name="source.cs.punctuation.separator.colon.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(\])</expression>
+                    <capture number="1" name="source.cs.punctuation.squarebracket.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="attribute" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="await-expression">
+            <scope name="source.cs.keyword.other.await.cs">
+                <expression>(?!\.)\b(await)\b</expression>
+            </scope>
+        </collection>
+        <collection name="await-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(await)\b</expression>
+                    <capture number="1" name="source.cs.keyword.other.await.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="base-types">
+            <scope>
+                <starts-with>
+                    <expression>:</expression>
+                    <capture number="0" name="source.cs.punctuation.separator.colon.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\{|where)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="type" />
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="preprocessor" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="block">
+            <scope>
+                <starts-with>
+                    <expression>\{</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\}</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="boolean-literal">
+            <scope name="source.cs.value.boolean.true.cs">
+                <expression>(?&lt;!\.)\btrue\b</expression>
+            </scope>
+            <scope name="source.cs.value.boolean.false.cs">
+                <expression>(?&lt;!\.)\bfalse\b</expression>
+            </scope>
+        </collection>
+        <collection name="bracketed-argument-list">
+            <scope>
+                <starts-with>
+                    <expression>\[</expression>
+                    <capture number="0" name="source.cs.punctuation.squarebracket.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\]</expression>
+                    <capture number="0" name="source.cs.punctuation.squarebracket.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="named-argument" />
+                    <include syntax="self" collection="argument" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="bracketed-parameter-list">
+            <scope>
+                <starts-with>
+                    <expression>(?=(\[))</expression>
+                    <capture number="1" name="source.cs.punctuation.squarebracket.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=(\]))</expression>
+                    <capture number="1" name="source.cs.punctuation.squarebracket.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>(?&lt;=\[)</expression>
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\])</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="comment" />
+                            <include syntax="self" collection="attribute-section" />
+                            <include syntax="self" collection="parameter" />
+                            <include syntax="self" collection="punctuation-comma" />
+                            <include syntax="self" collection="variable-initializer" />
+                        </subscopes>
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="break-or-continue-statement">
+            <scope>
+                <expression>(?&lt;!\.)\b(?:(break)|(continue))\b</expression>
+                <capture number="1" name="source.cs.keyword.control.flow.break.cs" />
+                <capture number="2" name="source.cs.keyword.control.flow.continue.cs" />
+            </scope>
+        </collection>
+        <collection name="cast-expression">
+            <scope>
+                <expression>(?x)
+(\()\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(\))(?=\s*@?[_[:alnum:]\(])</expression>
+                <capture number="1" name="source.cs.punctuation.parenthesis.open.cs" />
+                <capture number="2" />
+                <capture number="7" name="source.cs.punctuation.parenthesis.close.cs" />
+            </scope>
+        </collection>
+        <collection name="catch-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(catch)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.try.catch.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <scope>
+                                <expression>(?x)
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(?:(\g&lt;identifier&gt;)\b)?</expression>
+                                <capture number="1" />
+                                <capture number="6" name="source.cs.entity.name.variable.local.cs" />
+                            </scope>
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="when-clause" />
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="char-character-escape">
+            <scope name="source.cs.constant.character.escape.cs">
+                <expression>\\([&apos;&quot;\\0abfnrtv]|x[0-9a-fA-F]{1,4}|u[0-9a-fA-F]{4})</expression>
+            </scope>
+        </collection>
+        <collection name="char-literal">
+            <scope name="source.cs.string.quoted.single.cs">
+                <starts-with>
+                    <expression>&apos;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.char.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(\&apos;)|((?:[^\\\n])$)</expression>
+                    <capture number="1" name="source.cs.punctuation.definition.char.end.cs" />
+                    <capture number="2" name="source.cs.invalid.illegal.newline.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="char-character-escape" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="checked-unchecked-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(?:(checked)|(unchecked))\b\s*(\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.checked.cs" />
+                    <capture number="2" name="source.cs.keyword.other.unchecked.cs" />
+                    <capture number="3" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="checked-unchecked-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(?:(checked)|(unchecked))\b\s*(?!\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.checked.cs" />
+                    <capture number="2" name="source.cs.keyword.other.unchecked.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="class-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?=\bclass\b)</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>(?x)
+\b(class)\b\s+
+(@?[_[:alpha:]][_[:alnum:]]*)\s*</expression>
+                            <capture number="1" name="source.cs.keyword.other.class.cs" />
+                            <capture number="2" name="source.cs.identifier.type.class.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\{)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="comment" />
+                            <include syntax="self" collection="type-parameter-list" />
+                            <include syntax="self" collection="base-types" />
+                            <include syntax="self" collection="generic-constraints" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="class-or-struct-members" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="preprocessor" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="class-or-struct-members">
+            <include syntax="self" collection="preprocessor" />
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="storage-modifier" />
+            <include syntax="self" collection="type-declarations" />
+            <include syntax="self" collection="property-declaration" />
+            <include syntax="self" collection="field-declaration" />
+            <include syntax="self" collection="event-declaration" />
+            <include syntax="self" collection="indexer-declaration" />
+            <include syntax="self" collection="variable-initializer" />
+            <include syntax="self" collection="constructor-declaration" />
+            <include syntax="self" collection="destructor-declaration" />
+            <include syntax="self" collection="operator-declaration" />
+            <include syntax="self" collection="conversion-operator-declaration" />
+            <include syntax="self" collection="method-declaration" />
+            <include syntax="self" collection="attribute-section" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="comment">
+            <scope name="source.cs.comment.block.cs">
+                <starts-with>
+                    <expression>/\*</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\*/</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                </ends-with>
+                <subscopes />
+            </scope>
+            <scope>
+                <starts-with>
+                    <expression>(^\s+)?(?=//)</expression>
+                    <capture number="1" name="source.cs.punctuation.whitespace.comment.leading.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.comment.block.documentation.cs">
+                        <starts-with>
+                            <expression>(?&lt;!/)///(?!/)</expression>
+                            <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=$)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="xml-doc-comment" />
+                        </subscopes>
+                    </scope>
+                    <scope name="source.cs.comment.line.double-slash.cs">
+                        <starts-with>
+                            <expression>(?&lt;!/)//(?:(?!/)|(?=//))</expression>
+                            <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=$)</expression>
+                        </ends-with>
+                        <subscopes />
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="conditional-operator">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\?)\?(?!\?|\.|\[)</expression>
+                    <capture number="0" name="source.cs.keyword.operator.conditional.question-mark.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>:</expression>
+                    <capture number="0" name="source.cs.keyword.operator.conditional.colon.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="constructor-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?=@?[_[:alpha:]][_[:alnum:]]*\s*\()</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>(@?[_[:alpha:]][_[:alnum:]]*)\b</expression>
+                        <capture number="1" name="source.cs.identifier.function.cs" />
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>(:)</expression>
+                            <capture number="1" name="source.cs.punctuation.separator.colon.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\{|=&gt;)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="constructor-initializer" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="preprocessor" />
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="constructor-initializer">
+            <scope>
+                <starts-with>
+                    <expression>\b(?:(base)|(this))\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.base.cs" />
+                    <capture number="2" name="source.cs.keyword.other.this.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="argument-list" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="conversion-operator-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;explicit_or_implicit_keyword&gt;(?:\b(?:explicit|implicit)))\s*
+(?&lt;operator_keyword&gt;(?:\b(?:operator)))\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:ref\s+(?:readonly\s+)?)?   # ref return
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(?=\()</expression>
+                    <capture number="1" />
+                    <capture number="2" name="source.cs.keyword.other.operator-decl.cs" />
+                    <capture number="3" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="declaration-expression-local">
+            <scope>
+                <expression>(?x) # e.g. int x OR var x
+(?:
+  \b(var)\b|
+  (?&lt;type_name&gt;
+    (?:
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )
+)\s+
+(\g&lt;identifier&gt;)\b\s*
+(?=[,)\]])</expression>
+                <capture number="1" name="source.cs.keyword.other.var.cs" />
+                <capture number="2" />
+                <capture number="7" name="source.cs.entity.name.variable.local.cs" />
+            </scope>
+        </collection>
+        <collection name="declaration-expression-tuple">
+            <scope>
+                <expression>(?x) # e.g. int x OR var x
+(?:
+  \b(var)\b|
+  (?&lt;type_name&gt;
+    (?:
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )
+)\s+
+(\g&lt;identifier&gt;)\b\s*
+(?=[,)])</expression>
+                <capture number="1" name="source.cs.keyword.other.var.cs" />
+                <capture number="2" />
+                <capture number="7" name="source.cs.entity.name.variable.tuple-element.cs" />
+            </scope>
+        </collection>
+        <collection name="declarations">
+            <include syntax="self" collection="namespace-declaration" />
+            <include syntax="self" collection="type-declarations" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="delegate-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:\b(delegate)\b)\s+
+(?&lt;type_name&gt;
+  (?:
+    (?:ref\s+(?:readonly\s+)?)?   # ref return
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s+
+(\g&lt;identifier&gt;)\s*
+(&lt;([^&lt;&gt;]+)&gt;)?\s*
+(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.delegate.cs" />
+                    <capture number="2" />
+                    <capture number="7" name="source.cs.identifier.type.delegate.cs" />
+                    <capture number="8" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="generic-constraints" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="destructor-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(~)(@?[_[:alpha:]][_[:alnum:]]*)\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.punctuation.tilde.cs" />
+                    <capture number="2" name="source.cs.identifier.function.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="directives">
+            <include syntax="self" collection="extern-alias-directive" />
+            <include syntax="self" collection="using-directive" />
+            <include syntax="self" collection="attribute-section" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="do-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(do)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.loop.do.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|})</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="element-access-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:(\?)\s*)?                        # preceding null-conditional operator?
+(?:(\.)\s*)?                        # preceding dot?
+(?:(@?[_[:alpha:]][_[:alnum:]]*)\s*)? # property name
+(?:(\?)\s*)?                        # null-conditional operator?
+(?=\[)                              # open bracket of argument list</expression>
+                    <capture number="1" name="source.cs.keyword.operator.null-conditional.cs" />
+                    <capture number="2" name="source.cs.punctuation.accessor.cs" />
+                    <capture number="3" name="source.cs.variable.other.object.property.cs" />
+                    <capture number="4" name="source.cs.keyword.operator.null-conditional.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\])(?!\s*\[)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="bracketed-argument-list" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="else-part">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(else)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.conditional.else.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="enum-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?=\benum\b)</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>(?=enum)</expression>
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\{)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <scope>
+                                <expression>(enum)\s+(@?[_[:alpha:]][_[:alnum:]]*)</expression>
+                                <capture number="1" name="source.cs.keyword.other.enum.cs" />
+                                <capture number="2" name="source.cs.identifier.type.enum.cs" />
+                            </scope>
+                            <scope>
+                                <starts-with>
+                                    <expression>:</expression>
+                                    <capture number="0" name="source.cs.punctuation.separator.colon.cs" />
+                                </starts-with>
+                                <ends-with>
+                                    <expression>(?=\{)</expression>
+                                </ends-with>
+                                <subscopes>
+                                    <include syntax="self" collection="type" />
+                                </subscopes>
+                            </scope>
+                            <include syntax="self" collection="comment" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <scope>
+                                <starts-with>
+                                    <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                                    <capture number="0" name="source.cs.entity.name.variable.enum-member.cs" />
+                                </starts-with>
+                                <ends-with>
+                                    <expression>(?=(,|\}))</expression>
+                                </ends-with>
+                                <subscopes>
+                                    <include syntax="self" collection="comment" />
+                                    <include syntax="self" collection="variable-initializer" />
+                                </subscopes>
+                            </scope>
+                            <include syntax="self" collection="preprocessor" />
+                            <include syntax="self" collection="comment" />
+                            <include syntax="self" collection="attribute-section" />
+                            <include syntax="self" collection="punctuation-comma" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="preprocessor" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="event-accessors">
+            <scope>
+                <starts-with>
+                    <expression>\{</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\}</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.keyword.other.add.cs">
+                        <expression>\b(add)\b</expression>
+                    </scope>
+                    <scope name="source.cs.keyword.other.remove.cs">
+                        <expression>\b(remove)\b</expression>
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="attribute-section" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="punctuation-semicolon" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="event-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(event)\b\s*
+(?&lt;return_type&gt;
+  (?&lt;type_name&gt;
+    (?:
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )\s+
+)
+(?&lt;interface_name&gt;\g&lt;type_name&gt;\s*\.\s*)?
+(?&lt;event_names&gt;\g&lt;identifier&gt;(?:\s*,\s*\g&lt;identifier&gt;)*)\s*
+(?=\{|;|$)</expression>
+                    <capture number="1" name="source.cs.keyword.other.event.cs" />
+                    <capture number="2" />
+                    <capture number="8" />
+                    <capture number="9" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="event-accessors" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="expression">
+            <include syntax="self" collection="preprocessor" />
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="checked-unchecked-expression" />
+            <include syntax="self" collection="typeof-or-default-expression" />
+            <include syntax="self" collection="nameof-expression" />
+            <include syntax="self" collection="throw-expression" />
+            <include syntax="self" collection="interpolated-string" />
+            <include syntax="self" collection="verbatim-interpolated-string" />
+            <include syntax="self" collection="this-or-base-expression" />
+            <include syntax="self" collection="conditional-operator" />
+            <include syntax="self" collection="expression-operators" />
+            <include syntax="self" collection="await-expression" />
+            <include syntax="self" collection="query-expression" />
+            <include syntax="self" collection="as-expression" />
+            <include syntax="self" collection="is-expression" />
+            <include syntax="self" collection="anonymous-method-expression" />
+            <include syntax="self" collection="object-creation-expression" />
+            <include syntax="self" collection="array-creation-expression" />
+            <include syntax="self" collection="anonymous-object-creation-expression" />
+            <include syntax="self" collection="invocation-expression" />
+            <include syntax="self" collection="member-access-expression" />
+            <include syntax="self" collection="element-access-expression" />
+            <include syntax="self" collection="cast-expression" />
+            <include syntax="self" collection="literal" />
+            <include syntax="self" collection="parenthesized-expression" />
+            <include syntax="self" collection="tuple-deconstruction-assignment" />
+            <include syntax="self" collection="initializer-expression" />
+            <include syntax="self" collection="identifier" />
+        </collection>
+        <collection name="expression-body">
+            <scope>
+                <starts-with>
+                    <expression>=&gt;</expression>
+                    <capture number="0" name="source.cs.keyword.operator.arrow.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=[,\);}])</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="ref-modifier" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="expression-operators">
+            <scope name="source.cs.keyword.operator.assignment.compound.cs">
+                <expression>\*=|/=|%=|\+=|-=</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.assignment.compound.bitwise.cs">
+                <expression>\&amp;=|\^=|&lt;&lt;=|&gt;&gt;=|\|=</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.bitwise.shift.cs">
+                <expression>&lt;&lt;|&gt;&gt;</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.comparison.cs">
+                <expression>==|!=</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.relational.cs">
+                <expression>&lt;=|&gt;=|&lt;|&gt;</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.logical.cs">
+                <expression>\!|&amp;&amp;|\|\|</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.bitwise.cs">
+                <expression>\&amp;|~|\^|\|</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.assignment.cs">
+                <expression>\=</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.decrement.cs">
+                <expression>--</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.increment.cs">
+                <expression>\+\+</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.arithmetic.cs">
+                <expression>%|\*|/|-|\+</expression>
+            </scope>
+            <scope name="source.cs.keyword.operator.null-coalescing.cs">
+                <expression>\?\?</expression>
+            </scope>
+        </collection>
+        <collection name="extern-alias-directive">
+            <scope>
+                <starts-with>
+                    <expression>\s*(extern)\b\s*(alias)\b\s*(@?[_[:alpha:]][_[:alnum:]]*)</expression>
+                    <capture number="1" name="source.cs.keyword.other.extern.cs" />
+                    <capture number="2" name="source.cs.keyword.other.alias.cs" />
+                    <capture number="3" name="source.cs.variable.other.alias.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes />
+            </scope>
+        </collection>
+        <collection name="field-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s+
+(\g&lt;identifier&gt;)\s* # first field name
+(?!=&gt;|==)(?=,|;|=|$)</expression>
+                    <capture number="1" />
+                    <capture number="6" name="source.cs.entity.name.variable.field.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.entity.name.variable.field.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="variable-initializer" />
+                    <include syntax="self" collection="class-or-struct-members" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="finally-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(finally)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.try.finally.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="for-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(for)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.loop.for.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="local-variable-declaration" />
+                            <include syntax="self" collection="expression" />
+                            <include syntax="self" collection="punctuation-comma" />
+                            <include syntax="self" collection="punctuation-semicolon" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="foreach-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(foreach)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.loop.foreach.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <scope>
+                                <expression>(?x)
+(?:
+  (\bvar\b)|
+  (?&lt;type_name&gt;
+    (?:
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )
+)\s+
+(\g&lt;identifier&gt;)\s+
+\b(in)\b</expression>
+                                <capture number="1" name="source.cs.keyword.other.var.cs" />
+                                <capture number="2" />
+                                <capture number="7" name="source.cs.entity.name.variable.local.cs" />
+                                <capture number="8" name="source.cs.keyword.control.loop.in.cs" />
+                            </scope>
+                            <scope>
+                                <expression>(?x) # match foreach (var (x, y) in ...)
+(?:\b(var)\b\s*)?
+(?&lt;tuple&gt;\((?:[^\(\)]|\g&lt;tuple&gt;)+\))\s+
+\b(in)\b</expression>
+                                <capture number="1" name="source.cs.keyword.other.var.cs" />
+                                <capture number="2" />
+                                <capture number="3" name="source.cs.keyword.control.loop.in.cs" />
+                            </scope>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="generic-constraints">
+            <scope>
+                <starts-with>
+                    <expression>(where)\s+(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)</expression>
+                    <capture number="1" name="source.cs.keyword.other.where.cs" />
+                    <capture number="2" name="source.cs.keyword.type.cs" />
+                    <capture number="3" name="source.cs.punctuation.separator.colon.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\{|where|;|=&gt;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.keyword.other.class.cs">
+                        <expression>\bclass\b</expression>
+                    </scope>
+                    <scope name="source.cs.keyword.other.struct.cs">
+                        <expression>\bstruct\b</expression>
+                    </scope>
+                    <scope>
+                        <expression>(new)\s*(\()\s*(\))</expression>
+                        <capture number="1" name="source.cs.keyword.other.new.cs" />
+                        <capture number="2" name="source.cs.punctuation.parenthesis.open.cs" />
+                        <capture number="3" name="source.cs.punctuation.parenthesis.close.cs" />
+                    </scope>
+                    <include syntax="self" collection="type" />
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="generic-constraints" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="goto-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(goto)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.goto.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\b(case)\b</expression>
+                            <capture number="1" name="source.cs.keyword.control.case.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=;)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <expression>\b(default)\b</expression>
+                        <capture number="1" name="source.cs.keyword.control.default.cs" />
+                    </scope>
+                    <scope name="source.cs.entity.name.label.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="group-by">
+            <scope>
+                <expression>\b(by)\b\s*</expression>
+                <capture number="1" name="source.cs.keyword.query.by.cs" />
+            </scope>
+        </collection>
+        <collection name="group-clause">
+            <scope>
+                <starts-with>
+                    <expression>\b(group)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.group.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="group-by" />
+                    <include syntax="self" collection="group-into" />
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="group-into">
+            <scope>
+                <expression>(?x)
+\b(into)\b\s*
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*</expression>
+                <capture number="1" name="source.cs.keyword.query.into.cs" />
+                <capture number="2" name="source.cs.entity.name.variable.range-variable.cs" />
+            </scope>
+        </collection>
+        <collection name="identifier">
+            <scope name="source.cs.variable.other.readwrite.cs">
+                <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+            </scope>
+        </collection>
+        <collection name="if-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(if)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.conditional.if.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="indexer-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;return_type&gt;
+  (?&lt;type_name&gt;
+    (?:
+      (?:ref\s+(?:readonly\s+)?)?   # ref return
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )\s+
+)
+(?&lt;interface_name&gt;\g&lt;type_name&gt;\s*\.\s*)?
+(?&lt;indexer_name&gt;this)\s*
+(?=\[)</expression>
+                    <capture number="1" />
+                    <capture number="7" />
+                    <capture number="8" name="source.cs.keyword.other.this.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="bracketed-parameter-list" />
+                    <include syntax="self" collection="property-accessors" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="variable-initializer" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="initializer-expression">
+            <scope>
+                <starts-with>
+                    <expression>\{</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\}</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="interface-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?=\binterface\b)</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>(?x)
+(interface)\b\s+
+(@?[_[:alpha:]][_[:alnum:]]*)</expression>
+                            <capture number="1" name="source.cs.keyword.other.interface.cs" />
+                            <capture number="2" name="source.cs.identifier.type.interface.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\{)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="comment" />
+                            <include syntax="self" collection="type-parameter-list" />
+                            <include syntax="self" collection="base-types" />
+                            <include syntax="self" collection="generic-constraints" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="interface-members" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="preprocessor" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="interface-members">
+            <include syntax="self" collection="preprocessor" />
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="property-declaration" />
+            <include syntax="self" collection="event-declaration" />
+            <include syntax="self" collection="indexer-declaration" />
+            <include syntax="self" collection="method-declaration" />
+            <include syntax="self" collection="attribute-section" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="interpolated-string">
+            <scope name="source.cs.string.quoted.double.cs">
+                <starts-with>
+                    <expression>\$&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(&quot;)|((?:[^\\\n])$)</expression>
+                    <capture number="1" name="source.cs.punctuation.definition.string.end.cs" />
+                    <capture number="2" name="source.cs.invalid.illegal.newline.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="string-character-escape" />
+                    <include syntax="self" collection="interpolation" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="interpolation">
+            <scope name="source.cs.meta.interpolation.cs">
+                <starts-with>
+                    <expression>(?&lt;=[^\{]|^)((?:\{\{)*)(\{)(?=[^\{])</expression>
+                    <capture number="1" name="source.cs.string.quoted.double.cs" />
+                    <capture number="2" name="source.cs.punctuation.definition.interpolation.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\}</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.interpolation.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="invocation-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:(\?)\s*)?                                     # preceding null-conditional operator?
+(?:(\.)\s*)?                                     # preceding dot?
+(@?[_[:alpha:]][_[:alnum:]]*)\s*                   # method name
+(?&lt;type_args&gt;\s*&lt;([^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?\s* # type arguments
+(?=\()                                           # open paren of argument list</expression>
+                    <capture number="1" name="source.cs.keyword.operator.null-conditional.cs" />
+                    <capture number="2" name="source.cs.punctuation.accessor.cs" />
+                    <capture number="3" name="source.cs.identifier.function.cs" />
+                    <capture number="4" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="argument-list" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="is-expression">
+            <scope>
+                <expression>(?x)
+(?&lt;!\.)\b(is)\b\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)?</expression>
+                <capture number="1" name="source.cs.keyword.other.is.cs" />
+                <capture number="2" />
+            </scope>
+        </collection>
+        <collection name="join-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(join)\b\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)?
+\s+(\g&lt;identifier&gt;)\b\s*
+\b(in)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.join.cs" />
+                    <capture number="2" />
+                    <capture number="7" name="source.cs.entity.name.variable.range-variable.cs" />
+                    <capture number="8" name="source.cs.keyword.query.in.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="join-on" />
+                    <include syntax="self" collection="join-equals" />
+                    <include syntax="self" collection="join-into" />
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="join-equals">
+            <scope>
+                <expression>\b(equals)\b\s*</expression>
+                <capture number="1" name="source.cs.keyword.query.equals.cs" />
+            </scope>
+        </collection>
+        <collection name="join-into">
+            <scope>
+                <expression>(?x)
+\b(into)\b\s*
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*</expression>
+                <capture number="1" name="source.cs.keyword.query.into.cs" />
+                <capture number="2" name="source.cs.entity.name.variable.range-variable.cs" />
+            </scope>
+        </collection>
+        <collection name="join-on">
+            <scope>
+                <expression>\b(on)\b\s*</expression>
+                <capture number="1" name="source.cs.keyword.query.on.cs" />
+            </scope>
+        </collection>
+        <collection name="labeled-statement">
+            <scope>
+                <expression>(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)</expression>
+                <capture number="1" name="source.cs.entity.name.label.cs" />
+                <capture number="2" name="source.cs.punctuation.separator.colon.cs" />
+            </scope>
+        </collection>
+        <collection name="lambda-parameter">
+            <scope>
+                <expression>(?x)
+(?:\b(ref|out|in)\b)?\s*
+(?:(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s+)?
+(\g&lt;identifier&gt;)\b\s*
+(?=[,)])</expression>
+                <capture number="1" name="source.cs.keyword.modifier.cs" />
+                <capture number="2" />
+                <capture number="7" name="source.cs.entity.name.identifier.argument.cs" />
+            </scope>
+        </collection>
+        <collection name="lambda-parameter-list">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="attribute-section" />
+                    <include syntax="self" collection="lambda-parameter" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="let-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(let)\b\s*
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+(=)\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.let.cs" />
+                    <capture number="2" name="source.cs.entity.name.variable.range-variable.cs" />
+                    <capture number="3" name="source.cs.keyword.operator.assignment.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="literal">
+            <include syntax="self" collection="boolean-literal" />
+            <include syntax="self" collection="null-literal" />
+            <include syntax="self" collection="numeric-literal" />
+            <include syntax="self" collection="char-literal" />
+            <include syntax="self" collection="string-literal" />
+            <include syntax="self" collection="verbatim-string-literal" />
+            <include syntax="self" collection="tuple-literal" />
+        </collection>
+        <collection name="local-constant-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;const_keyword&gt;\b(?:const)\b)\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s+
+(\g&lt;identifier&gt;)\s*
+(?=,|;|=)</expression>
+                    <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    <capture number="2" />
+                    <capture number="7" name="source.cs.entity.name.variable.local.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.entity.name.variable.local.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="variable-initializer" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="local-declaration">
+            <include syntax="self" collection="local-constant-declaration" />
+            <include syntax="self" collection="local-variable-declaration" />
+            <include syntax="self" collection="local-tuple-var-deconstruction" />
+        </collection>
+        <collection name="local-tuple-var-deconstruction">
+            <scope>
+                <starts-with>
+                    <expression>(?x) # e.g. var (x, y) = GetPoint();
+(?:\b(var)\b\s*)
+(?&lt;tuple&gt;\((?:[^\(\)]|\g&lt;tuple&gt;)+\))\s*
+(?=;|=|\))</expression>
+                    <capture number="1" name="source.cs.keyword.other.var.cs" />
+                    <capture number="2" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="variable-initializer" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="local-variable-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:
+  (?:(\bref)\s+(?:(\breadonly)\s+)?)?(\bvar\b)| # ref local
+  (?&lt;type_name&gt;
+    (?:
+      (?:ref\s+(?:readonly\s+)?)?   # ref local
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )
+)\s+
+(\g&lt;identifier&gt;)\s*
+(?!=&gt;)
+(?=,|;|=|\))</expression>
+                    <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    <capture number="2" name="source.cs.keyword.modifier.cs" />
+                    <capture number="3" name="source.cs.keyword.other.var.cs" />
+                    <capture number="4" />
+                    <capture number="9" name="source.cs.entity.name.variable.local.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.entity.name.variable.local.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="variable-initializer" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="lock-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(lock)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.lock.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="member-access-expression">
+            <scope>
+                <expression>(?x)
+(?:(\?)\s*)?                   # preceding null-conditional operator?
+(\.)\s*                        # preceding dot
+(@?[_[:alpha:]][_[:alnum:]]*)\s* # property name
+(?![_[:alnum:]]|\(|(\?)?\[|&lt;)  # next character is not alpha-numeric, nor a (, [, or &lt;. Also, test for ?[</expression>
+                <capture number="1" name="source.cs.keyword.operator.null-conditional.cs" />
+                <capture number="2" name="source.cs.punctuation.accessor.cs" />
+                <capture number="3" name="source.cs.variable.other.object.property.cs" />
+            </scope>
+            <scope>
+                <expression>(?x)
+(\.)?\s*
+(@?[_[:alpha:]][_[:alnum:]]*)
+(?&lt;type_params&gt;\s*&lt;([^&lt;&gt;]|\g&lt;type_params&gt;)+&gt;\s*)
+(?=
+  (\s*\?)?
+  \s*\.\s*@?[_[:alpha:]][_[:alnum:]]*
+)</expression>
+                <capture number="1" name="source.cs.punctuation.accessor.cs" />
+                <capture number="2" name="source.cs.variable.other.object.cs" />
+                <capture number="3" />
+            </scope>
+            <scope>
+                <expression>(?x)
+(@?[_[:alpha:]][_[:alnum:]]*)
+(?=
+  (\s*\?)?
+  \s*\.\s*@?[_[:alpha:]][_[:alnum:]]*
+)</expression>
+                <capture number="1" name="source.cs.variable.other.object.cs" />
+            </scope>
+        </collection>
+        <collection name="method-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;return_type&gt;
+  (?&lt;type_name&gt;
+    (?:
+      (?:ref\s+(?:readonly\s+)?)?   # ref return
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )\s+
+)
+(?&lt;interface_name&gt;\g&lt;type_name&gt;\s*\.\s*)?
+(\g&lt;identifier&gt;)\s*
+(&lt;([^&lt;&gt;]+)&gt;)?\s*
+(?=\()</expression>
+                    <capture number="1" />
+                    <capture number="7" />
+                    <capture number="8" name="source.cs.identifier.function.cs" />
+                    <capture number="9" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="generic-constraints" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="named-argument">
+            <scope>
+                <starts-with>
+                    <expression>(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)</expression>
+                    <capture number="1" name="source.cs.entity.name.identifier.argument.cs" />
+                    <capture number="2" name="source.cs.punctuation.separator.colon.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=(,|\)|\]))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="argument" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="nameof-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(nameof)\b\s*(\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.nameof.cs" />
+                    <capture number="2" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="namespace-declaration">
+            <scope>
+                <starts-with>
+                    <expression>\b(namespace)\s+</expression>
+                    <capture number="1" name="source.cs.keyword.other.namespace.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.identifier.type.namespace.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="declarations" />
+                            <include syntax="self" collection="using-directive" />
+                            <include syntax="self" collection="punctuation-semicolon" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="punctuation-accessor" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="null-literal">
+            <scope name="source.cs.value.null.cs">
+                <expression>(?&lt;!\.)\bnull\b</expression>
+            </scope>
+        </collection>
+        <collection name="numeric-literal">
+            <scope name="source.cs.value.number.hex.cs">
+                <expression>\b0(x|X)[0-9a-fA-F_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b</expression>
+            </scope>
+            <scope name="source.cs.value.number.binary.cs">
+                <expression>\b0(b|B)[01_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b</expression>
+            </scope>
+            <scope name="source.cs.value.number.decimal.cs">
+                <expression>\b([0-9_]+)?\.[0-9_]+((e|E)[0-9]+)?(F|f|D|d|M|m)?\b</expression>
+            </scope>
+            <scope name="source.cs.value.number.decimal.cs">
+                <expression>\b[0-9_]+(e|E)[0-9_]+(F|f|D|d|M|m)?\b</expression>
+            </scope>
+            <scope name="source.cs.value.number.decimal.cs">
+                <expression>\b[0-9_]+(F|f|D|d|M|m)\b</expression>
+            </scope>
+            <scope name="source.cs.value.number.decimal.cs">
+                <expression>\b[0-9_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b</expression>
+            </scope>
+        </collection>
+        <collection name="object-creation-expression">
+            <include syntax="self" collection="object-creation-expression-with-parameters" />
+            <include syntax="self" collection="object-creation-expression-with-no-parameters" />
+        </collection>
+        <collection name="object-creation-expression-with-no-parameters">
+            <scope>
+                <expression>(?x)
+(new)\s+
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(?=\{|$)</expression>
+                <capture number="1" name="source.cs.keyword.other.new.cs" />
+                <capture number="2" />
+            </scope>
+        </collection>
+        <collection name="object-creation-expression-with-parameters">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(new)\s+
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.new.cs" />
+                    <capture number="2" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="argument-list" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="operator-assignment">
+            <scope name="source.cs.keyword.operator.assignment.cs">
+                <expression>(?&lt;!=|!)(=)(?!=)</expression>
+            </scope>
+        </collection>
+        <collection name="operator-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?&lt;type_name&gt;
+  (?:
+    (?:ref\s+(?:readonly\s+)?)?   # ref return
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s*
+(?&lt;operator_keyword&gt;(?:\b(?:operator)))\s*
+(?&lt;operator&gt;(?:\+|-|\*|/|%|&amp;|\||\^|\&lt;&lt;|&gt;\&gt;|==|!=|\&gt;|\&lt;|&gt;=|\&lt;=|!|~|\+\+|--|true|false))\s*
+(?=\()</expression>
+                    <capture number="1" />
+                    <capture number="6" name="source.cs.keyword.other.operator-decl.cs" />
+                    <capture number="7" name="source.cs.identifier.function.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="parenthesized-parameter-list" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="orderby-clause">
+            <scope>
+                <starts-with>
+                    <expression>\b(orderby)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.orderby.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="ordering-direction" />
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="ordering-direction">
+            <scope>
+                <expression>\b(?:(ascending)|(descending))\b</expression>
+                <capture number="1" name="source.cs.keyword.query.ascending.cs" />
+                <capture number="2" name="source.cs.keyword.query.descending.cs" />
+            </scope>
+        </collection>
+        <collection name="parameter">
+            <scope>
+                <expression>(?x)
+(?:(?:\b(ref|params|out|in|this)\b)\s+)?
+(?&lt;type_name&gt;
+  (?:
+    (?:ref\s+)?   # ref return
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)\s+
+(\g&lt;identifier&gt;)</expression>
+                <capture number="1" name="source.cs.keyword.modifier.cs" />
+                <capture number="2" />
+                <capture number="7" name="source.cs.entity.name.identifier.argument.cs" />
+            </scope>
+        </collection>
+        <collection name="parenthesized-expression">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="parenthesized-parameter-list">
+            <scope>
+                <starts-with>
+                    <expression>(\()</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(\))</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="attribute-section" />
+                    <include syntax="self" collection="parameter" />
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="variable-initializer" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor">
+            <scope name="source.cs.meta.preprocessor.cs">
+                <starts-with>
+                    <expression>^\s*(\#)\s*</expression>
+                    <capture number="1" name="source.cs.punctuation.separator.hash.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="preprocessor-define-or-undef" />
+                    <include syntax="self" collection="preprocessor-if-or-elif" />
+                    <include syntax="self" collection="preprocessor-else-or-endif" />
+                    <include syntax="self" collection="preprocessor-warning-or-error" />
+                    <include syntax="self" collection="preprocessor-region" />
+                    <include syntax="self" collection="preprocessor-endregion" />
+                    <include syntax="self" collection="preprocessor-load" />
+                    <include syntax="self" collection="preprocessor-r" />
+                    <include syntax="self" collection="preprocessor-line" />
+                    <include syntax="self" collection="preprocessor-pragma-warning" />
+                    <include syntax="self" collection="preprocessor-pragma-checksum" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor-define-or-undef">
+            <scope>
+                <expression>\b(?:(define)|(undef))\b\s*\b([_[:alpha:]][_[:alnum:]]*)\b</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.define.cs" />
+                <capture number="2" name="source.cs.keyword.preprocessor.undef.cs" />
+                <capture number="3" name="source.cs.entity.name.variable.preprocessor.symbol.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-else-or-endif">
+            <scope>
+                <expression>\b(?:(else)|(endif))\b</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.else.cs" />
+                <capture number="2" name="source.cs.keyword.preprocessor.endif.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-endregion">
+            <scope>
+                <expression>\b(endregion)\b</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.endregion.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-expression">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="preprocessor-expression" />
+                </subscopes>
+            </scope>
+            <scope>
+                <expression>\b(?:(true)|(false)|([_[:alpha:]][_[:alnum:]]*))\b</expression>
+                <capture number="1" name="source.cs.value.boolean.true.cs" />
+                <capture number="2" name="source.cs.value.boolean.false.cs" />
+                <capture number="3" name="source.cs.entity.name.variable.preprocessor.symbol.cs" />
+            </scope>
+            <scope>
+                <expression>(==|!=)|(\!|&amp;&amp;|\|\|)</expression>
+                <capture number="1" name="source.cs.keyword.operator.comparison.cs" />
+                <capture number="2" name="source.cs.keyword.operator.logical.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-if-or-elif">
+            <scope>
+                <starts-with>
+                    <expression>\b(?:(if)|(elif))\b</expression>
+                    <capture number="1" name="source.cs.keyword.preprocessor.if.cs" />
+                    <capture number="2" name="source.cs.keyword.preprocessor.elif.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="preprocessor-expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor-line">
+            <scope>
+                <starts-with>
+                    <expression>\b(line)\b</expression>
+                    <capture number="1" name="source.cs.keyword.preprocessor.line.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>\b(?:(default)|(hidden))</expression>
+                        <capture number="1" name="source.cs.keyword.preprocessor.default.cs" />
+                        <capture number="2" name="source.cs.keyword.preprocessor.hidden.cs" />
+                    </scope>
+                    <scope>
+                        <expression>[0-9]+</expression>
+                        <capture number="0" name="source.cs.value.number.decimal.cs" />
+                    </scope>
+                    <scope>
+                        <expression>\&quot;[^&quot;]*\&quot;</expression>
+                        <capture number="0" name="source.cs.string.quoted.double.cs" />
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor-load">
+            <scope>
+                <starts-with>
+                    <expression>\b(load)\b</expression>
+                    <capture number="1" name="source.cs.keyword.preprocessor.load.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>\&quot;[^&quot;]*\&quot;</expression>
+                        <capture number="0" name="source.cs.string.quoted.double.cs" />
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor-pragma-checksum">
+            <scope>
+                <expression>\b(pragma)\b\s*\b(checksum)\b\s*(\&quot;[^&quot;]*\&quot;)\s*(\&quot;[^&quot;]*\&quot;)\s*(\&quot;[^&quot;]*\&quot;)</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.pragma.cs" />
+                <capture number="2" name="source.cs.keyword.preprocessor.checksum.cs" />
+                <capture number="3" name="source.cs.string.quoted.double.cs" />
+                <capture number="4" name="source.cs.string.quoted.double.cs" />
+                <capture number="5" name="source.cs.string.quoted.double.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-pragma-warning">
+            <scope>
+                <expression>\b(pragma)\b\s*\b(warning)\b\s*\b(?:(disable)|(restore))\b(\s*[0-9]+(?:\s*,\s*[0-9]+)?)?</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.pragma.cs" />
+                <capture number="2" name="source.cs.keyword.preprocessor.warning.cs" />
+                <capture number="3" name="source.cs.keyword.preprocessor.disable.cs" />
+                <capture number="4" name="source.cs.keyword.preprocessor.restore.cs" />
+                <capture number="5" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-r">
+            <scope>
+                <starts-with>
+                    <expression>\b(r)\b</expression>
+                    <capture number="1" name="source.cs.keyword.preprocessor.r.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=$)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>\&quot;[^&quot;]*\&quot;</expression>
+                        <capture number="0" name="source.cs.string.quoted.double.cs" />
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="preprocessor-region">
+            <scope>
+                <expression>\b(region)\b\s*(.*)(?=$)</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.region.cs" />
+                <capture number="2" name="source.cs.string.unquoted.preprocessor.message.cs" />
+            </scope>
+        </collection>
+        <collection name="preprocessor-warning-or-error">
+            <scope>
+                <expression>\b(?:(warning)|(error))\b\s*(.*)(?=$)</expression>
+                <capture number="1" name="source.cs.keyword.preprocessor.warning.cs" />
+                <capture number="2" name="source.cs.keyword.preprocessor.error.cs" />
+                <capture number="3" name="source.cs.string.unquoted.preprocessor.message.cs" />
+            </scope>
+        </collection>
+        <collection name="property-accessors">
+            <scope>
+                <starts-with>
+                    <expression>\{</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\}</expression>
+                    <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.keyword.modifier.cs">
+                        <expression>\b(private|protected|internal)\b</expression>
+                    </scope>
+                    <scope name="source.cs.keyword.other.get.cs">
+                        <expression>\b(get)\b</expression>
+                    </scope>
+                    <scope name="source.cs.keyword.other.set.cs">
+                        <expression>\b(set)\b</expression>
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="attribute-section" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="block" />
+                    <include syntax="self" collection="punctuation-semicolon" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="property-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+
+# The negative lookahead below ensures that we don&apos;t match nested types
+# or other declarations as properties.
+(?![[:word:][:space:]]*\b(?:class|interface|struct|enum|event)\b)
+
+(?&lt;return_type&gt;
+  (?&lt;type_name&gt;
+    (?:
+      (?:ref\s+(?:readonly\s+)?)?   # ref return
+      (?:
+        (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+        (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+          \g&lt;identifier&gt;\s*
+          (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+        )
+        (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+        (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+      )
+      (?:\s*\?\s*)? # nullable suffix?
+      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+    )
+  )\s+
+)
+(?&lt;interface_name&gt;\g&lt;type_name&gt;\s*\.\s*)?
+(?&lt;property_name&gt;\g&lt;identifier&gt;)\s*
+(?=\{|=&gt;|$)</expression>
+                    <capture number="1" />
+                    <capture number="7" />
+                    <capture number="8" name="source.cs.entity.name.variable.property.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="property-accessors" />
+                    <include syntax="self" collection="expression-body" />
+                    <include syntax="self" collection="variable-initializer" />
+                    <include syntax="self" collection="class-or-struct-members" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="punctuation-accessor">
+            <scope name="source.cs.punctuation.accessor.cs">
+                <expression>\.</expression>
+            </scope>
+        </collection>
+        <collection name="punctuation-comma">
+            <scope name="source.cs.punctuation.separator.comma.cs">
+                <expression>,</expression>
+            </scope>
+        </collection>
+        <collection name="punctuation-semicolon">
+            <scope name="source.cs.punctuation.terminator.statement.cs">
+                <expression>;</expression>
+            </scope>
+        </collection>
+        <collection name="query-body">
+            <include syntax="self" collection="let-clause" />
+            <include syntax="self" collection="where-clause" />
+            <include syntax="self" collection="join-clause" />
+            <include syntax="self" collection="orderby-clause" />
+            <include syntax="self" collection="select-clause" />
+            <include syntax="self" collection="group-clause" />
+        </collection>
+        <collection name="query-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(from)\b\s*
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)?
+\s+(\g&lt;identifier&gt;)\b\s*
+\b(in)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.from.cs" />
+                    <capture number="2" />
+                    <capture number="7" name="source.cs.entity.name.variable.range-variable.cs" />
+                    <capture number="8" name="source.cs.keyword.query.in.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="readonly-modifier">
+            <scope name="source.cs.keyword.modifier.cs">
+                <expression>\b(readonly)\b</expression>
+            </scope>
+        </collection>
+        <collection name="ref-modifier">
+            <scope name="source.cs.keyword.modifier.cs">
+                <expression>\b(ref)\b</expression>
+            </scope>
+        </collection>
+        <collection name="return-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(return)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.flow.return.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="ref-modifier" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="script-top-level">
+            <include syntax="self" collection="method-declaration" />
+            <include syntax="self" collection="statement" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="select-clause">
+            <scope>
+                <starts-with>
+                    <expression>\b(select)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.select.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="statement">
+            <include syntax="self" collection="preprocessor" />
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="while-statement" />
+            <include syntax="self" collection="do-statement" />
+            <include syntax="self" collection="for-statement" />
+            <include syntax="self" collection="foreach-statement" />
+            <include syntax="self" collection="if-statement" />
+            <include syntax="self" collection="else-part" />
+            <include syntax="self" collection="switch-statement" />
+            <include syntax="self" collection="goto-statement" />
+            <include syntax="self" collection="return-statement" />
+            <include syntax="self" collection="break-or-continue-statement" />
+            <include syntax="self" collection="throw-statement" />
+            <include syntax="self" collection="yield-statement" />
+            <include syntax="self" collection="await-statement" />
+            <include syntax="self" collection="try-statement" />
+            <include syntax="self" collection="checked-unchecked-statement" />
+            <include syntax="self" collection="lock-statement" />
+            <include syntax="self" collection="using-statement" />
+            <include syntax="self" collection="labeled-statement" />
+            <include syntax="self" collection="local-declaration" />
+            <include syntax="self" collection="block" />
+            <include syntax="self" collection="expression" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="storage-modifier">
+            <scope name="source.cs.keyword.modifier.cs">
+                <expression>(?&lt;!\.)\b(new|public|protected|internal|private|abstract|virtual|override|sealed|static|partial|readonly|volatile|const|extern|async|unsafe|ref)\b</expression>
+            </scope>
+        </collection>
+        <collection name="string-character-escape">
+            <scope name="source.cs.constant.character.escape.cs">
+                <expression>\\([&apos;&quot;\\0abfnrtv]|x[0-9a-fA-F]{1,4}|U[0-9a-fA-F]{8}|u[0-9a-fA-F]{4})</expression>
+            </scope>
+        </collection>
+        <collection name="string-literal">
+            <scope name="source.cs.string.quoted.double.cs">
+                <starts-with>
+                    <expression>(?&lt;!@)&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(&quot;)|((?:[^\\\n])$)</expression>
+                    <capture number="1" name="source.cs.punctuation.definition.string.end.cs" />
+                    <capture number="2" name="source.cs.invalid.illegal.newline.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="string-character-escape" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="struct-declaration">
+            <scope>
+                <starts-with>
+                    <expression>(?=\bstruct\b)</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>(?x)
+(struct)\b\s+
+(@?[_[:alpha:]][_[:alnum:]]*)</expression>
+                            <capture number="1" name="source.cs.keyword.other.struct.cs" />
+                            <capture number="2" name="source.cs.identifier.type.struct.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>(?=\{)</expression>
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="comment" />
+                            <include syntax="self" collection="type-parameter-list" />
+                            <include syntax="self" collection="base-types" />
+                            <include syntax="self" collection="generic-constraints" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="class-or-struct-members" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="preprocessor" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="switch-label">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(case)\b\s+</expression>
+                    <capture number="1" name="source.cs.keyword.control.case.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>:</expression>
+                    <capture number="0" name="source.cs.punctuation.separator.colon.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+            <scope>
+                <expression>(?&lt;!\.)\b(default)\b\s*(:)</expression>
+                <capture number="1" name="source.cs.keyword.control.default.cs" />
+                <capture number="2" name="source.cs.punctuation.separator.colon.cs" />
+            </scope>
+        </collection>
+        <collection name="switch-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(switch)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.switch.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <scope>
+                        <starts-with>
+                            <expression>\{</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\}</expression>
+                            <capture number="0" name="source.cs.punctuation.curlybrace.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="switch-label" />
+                            <include syntax="self" collection="statement" />
+                        </subscopes>
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="this-or-base-expression">
+            <scope>
+                <expression>\b(?:(base)|(this))\b</expression>
+                <capture number="1" name="source.cs.keyword.other.base.cs" />
+                <capture number="2" name="source.cs.keyword.other.this.cs" />
+            </scope>
+        </collection>
+        <collection name="throw-expression">
+            <scope>
+                <expression>(?&lt;!\.)\b(throw)\b</expression>
+                <capture number="1" name="source.cs.keyword.control.flow.throw.cs" />
+            </scope>
+        </collection>
+        <collection name="throw-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(throw)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.flow.throw.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="try-block">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(try)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.try.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="block" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="try-statement">
+            <include syntax="self" collection="try-block" />
+            <include syntax="self" collection="catch-clause" />
+            <include syntax="self" collection="finally-clause" />
+        </collection>
+        <collection name="tuple-declaration-deconstruction-element-list">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>(?x) # e.g. x
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+(?=[,)])</expression>
+                        <capture number="1" name="source.cs.entity.name.variable.tuple-element.cs" />
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="tuple-declaration-deconstruction-element-list" />
+                    <include syntax="self" collection="declaration-expression-tuple" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="tuple-deconstruction-assignment">
+            <scope>
+                <expression>(?x)
+(?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))\s*
+(?!=&gt;|==)(?==)</expression>
+                <capture number="1" />
+            </scope>
+        </collection>
+        <collection name="tuple-deconstruction-element-list">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>(?x) # e.g. x
+(@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+(?=[,)])</expression>
+                        <capture number="1" name="source.cs.variable.other.readwrite.cs" />
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="tuple-deconstruction-element-list" />
+                    <include syntax="self" collection="declaration-expression-tuple" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="tuple-element">
+            <scope>
+                <expression>(?x)
+(?&lt;type_name&gt;
+  (?:
+    (?:
+      (?:(?&lt;identifier&gt;@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+      (?&lt;name_and_type_args&gt; # identifier + type arguments (if any)
+        \g&lt;identifier&gt;\s*
+        (?&lt;type_args&gt;\s*&lt;(?:[^&lt;&gt;]|\g&lt;type_args&gt;)+&gt;\s*)?
+      )
+      (?:\s*\.\s*\g&lt;name_and_type_args&gt;)* | # Are there any more names being dotted into?
+      (?&lt;tuple&gt;\s*\((?:[^\(\)]|\g&lt;tuple&gt;)+\))
+    )
+    (?:\s*\?\s*)? # nullable suffix?
+    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+  )
+)
+(?:(?&lt;tuple_name&gt;\g&lt;identifier&gt;)\b)?</expression>
+                <capture number="1" />
+                <capture number="6" name="source.cs.entity.name.variable.tuple-element.cs" />
+            </scope>
+        </collection>
+        <collection name="tuple-literal">
+            <scope>
+                <starts-with>
+                    <expression>(\()(?=.*[:,])</expression>
+                    <capture number="1" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="tuple-literal-element" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="tuple-literal-element">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+(?:(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)\s*)?
+(?![,)])</expression>
+                    <capture number="0" name="source.cs.entity.name.variable.tuple-element.cs" />
+                    <capture number="1" name="source.cs.punctuation.separator.colon.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=[,)])</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="tuple-type">
+            <scope>
+                <starts-with>
+                    <expression>\(</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="tuple-element" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="type">
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="ref-modifier" />
+            <include syntax="self" collection="readonly-modifier" />
+            <include syntax="self" collection="tuple-type" />
+            <include syntax="self" collection="type-builtin" />
+            <include syntax="self" collection="type-name" />
+            <include syntax="self" collection="type-arguments" />
+            <include syntax="self" collection="type-array-suffix" />
+            <include syntax="self" collection="type-nullable-suffix" />
+        </collection>
+        <collection name="type-arguments">
+            <scope>
+                <starts-with>
+                    <expression>&lt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.typeparameters.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>&gt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.typeparameters.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="type" />
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="type-array-suffix">
+            <scope>
+                <starts-with>
+                    <expression>\[</expression>
+                    <capture number="0" name="source.cs.punctuation.squarebracket.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\]</expression>
+                    <capture number="0" name="source.cs.punctuation.squarebracket.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="punctuation-comma" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="type-builtin">
+            <scope>
+                <expression>\b(bool|byte|char|decimal|double|float|int|long|object|sbyte|short|string|uint|ulong|ushort|void|dynamic)\b</expression>
+                <capture number="1" name="source.cs.keyword.type.cs" />
+            </scope>
+        </collection>
+        <collection name="type-declarations">
+            <include syntax="self" collection="preprocessor" />
+            <include syntax="self" collection="comment" />
+            <include syntax="self" collection="storage-modifier" />
+            <include syntax="self" collection="class-declaration" />
+            <include syntax="self" collection="delegate-declaration" />
+            <include syntax="self" collection="enum-declaration" />
+            <include syntax="self" collection="interface-declaration" />
+            <include syntax="self" collection="struct-declaration" />
+            <include syntax="self" collection="attribute-section" />
+            <include syntax="self" collection="punctuation-semicolon" />
+        </collection>
+        <collection name="type-name">
+            <scope>
+                <expression>(@?[_[:alpha:]][_[:alnum:]]*)\s*(\:\:)</expression>
+                <capture number="1" name="source.cs.identifier.type.alias.cs" />
+                <capture number="2" name="source.cs.punctuation.separator.coloncolon.cs" />
+            </scope>
+            <scope>
+                <expression>(@?[_[:alpha:]][_[:alnum:]]*)\s*(\.)</expression>
+                <capture number="1" name="source.cs.keyword.type.cs" />
+                <capture number="2" name="source.cs.punctuation.accessor.cs" />
+            </scope>
+            <scope>
+                <expression>(\.)\s*(@?[_[:alpha:]][_[:alnum:]]*)</expression>
+                <capture number="1" name="source.cs.punctuation.accessor.cs" />
+                <capture number="2" name="source.cs.keyword.type.cs" />
+            </scope>
+            <scope name="source.cs.keyword.type.cs">
+                <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+            </scope>
+        </collection>
+        <collection name="type-nullable-suffix">
+            <scope>
+                <expression>\?</expression>
+                <capture number="0" name="source.cs.punctuation.separator.question-mark.cs" />
+            </scope>
+        </collection>
+        <collection name="type-parameter-list">
+            <scope>
+                <starts-with>
+                    <expression>\&lt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.typeparameters.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\&gt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.typeparameters.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <expression>\b(in|out)\b</expression>
+                        <capture number="1" name="source.cs.keyword.modifier.cs" />
+                    </scope>
+                    <scope>
+                        <expression>(@?[_[:alpha:]][_[:alnum:]]*)\b</expression>
+                        <capture number="1" name="source.cs.identifier.type.type-parameter.cs" />
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="punctuation-comma" />
+                    <include syntax="self" collection="attribute-section" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="typeof-or-default-expression">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(?:(typeof)|(default))\b\s*(\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.typeof.cs" />
+                    <capture number="2" name="source.cs.keyword.other.default.cs" />
+                    <capture number="3" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="type" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="using-directive">
+            <scope>
+                <starts-with>
+                    <expression>\b(using)\b\s+(static)\s+</expression>
+                    <capture number="1" name="source.cs.keyword.other.using.cs" />
+                    <capture number="2" name="source.cs.keyword.other.static.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="type" />
+                </subscopes>
+            </scope>
+            <scope>
+                <starts-with>
+                    <expression>\b(using)\s+(?=(@?[_[:alpha:]][_[:alnum:]]*)\s*=)</expression>
+                    <capture number="1" name="source.cs.keyword.other.using.cs" />
+                    <capture number="2" name="source.cs.identifier.type.alias.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="type" />
+                    <include syntax="self" collection="operator-assignment" />
+                </subscopes>
+            </scope>
+            <scope>
+                <starts-with>
+                    <expression>\b(using)\s*</expression>
+                    <capture number="1" name="source.cs.keyword.other.using.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="source.cs.identifier.type.namespace.cs">
+                        <expression>@?[_[:alpha:]][_[:alnum:]]*</expression>
+                    </scope>
+                    <include syntax="self" collection="comment" />
+                    <include syntax="self" collection="operator-assignment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="using-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(using)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.other.using.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=\;|})</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="local-variable-declaration" />
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="variable-initializer">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!=|!)(=)(?!=|&gt;)</expression>
+                    <capture number="1" name="source.cs.keyword.operator.assignment.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=[,\)\];}])</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="ref-modifier" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="verbatim-interpolated-string">
+            <scope name="source.cs.string.quoted.double.cs">
+                <starts-with>
+                    <expression>\$@&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>&quot;(?=[^&quot;])</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="verbatim-string-character-escape" />
+                    <include syntax="self" collection="interpolation" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="verbatim-string-character-escape">
+            <scope name="source.cs.constant.character.escape.cs">
+                <expression>&quot;&quot;</expression>
+            </scope>
+        </collection>
+        <collection name="verbatim-string-literal">
+            <scope name="source.cs.string.quoted.double.cs">
+                <starts-with>
+                    <expression>@&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>&quot;(?=[^&quot;])</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="verbatim-string-character-escape" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="when-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(when)\b\s*(\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.try.when.cs" />
+                    <capture number="2" name="source.cs.punctuation.parenthesis.open.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\)</expression>
+                    <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                    <include syntax="self" collection="comment" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="where-clause">
+            <scope>
+                <starts-with>
+                    <expression>(?x)
+\b(where)\b\s*</expression>
+                    <capture number="1" name="source.cs.keyword.query.where.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;|\))</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="query-body" />
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="while-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(while)\b\s*(?=\()</expression>
+                    <capture number="1" name="source.cs.keyword.control.loop.while.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?&lt;=\})|(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <scope>
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.open.cs" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="source.cs.punctuation.parenthesis.close.cs" />
+                        </ends-with>
+                        <subscopes>
+                            <include syntax="self" collection="expression" />
+                        </subscopes>
+                    </scope>
+                    <include syntax="self" collection="statement" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="xml-attribute">
+            <scope>
+                <expression>(?x)
+(?:^|\s+)
+(
+  (?:
+    ([-_[:alnum:]]+)
+    (:)
+  )?
+  ([-_[:alnum:]]+)
+)
+(=)</expression>
+                <capture number="1" name="source.cs.entity.other.attribute-name.cs" />
+                <capture number="2" name="source.cs.entity.other.attribute-name.namespace.cs" />
+                <capture number="3" name="source.cs.punctuation.separator.colon.cs" />
+                <capture number="4" name="source.cs.entity.other.attribute-name.localname.cs" />
+                <capture number="5" name="source.cs.punctuation.separator.equals.cs" />
+            </scope>
+            <include syntax="self" collection="xml-string" />
+        </collection>
+        <collection name="xml-cdata">
+            <scope name="source.cs.string.unquoted.cdata.cs">
+                <starts-with>
+                    <expression>&lt;!\[CDATA\[</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\]\]&gt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.end.cs" />
+                </ends-with>
+                <subscopes />
+            </scope>
+        </collection>
+        <collection name="xml-character-entity">
+            <scope name="source.cs.constant.character.entity.cs">
+                <expression>(?x)
+(&amp;)
+(
+  (?:[[:alpha:]:_][[:alnum:]:_.-]*)|
+  (?:\#[[:digit:]]+)|
+  (?:\#x[[:xdigit:]]+)
+)
+(;)</expression>
+                <capture number="1" name="source.cs.punctuation.definition.constant.cs" />
+                <capture number="3" name="source.cs.punctuation.definition.constant.cs" />
+            </scope>
+            <scope name="source.cs.invalid.illegal.bad-ampersand.cs">
+                <expression>&amp;</expression>
+            </scope>
+        </collection>
+        <collection name="xml-comment">
+            <scope name="source.cs.comment.block.cs">
+                <starts-with>
+                    <expression>&lt;!--</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>--&gt;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.comment.cs" />
+                </ends-with>
+                <subscopes />
+            </scope>
+        </collection>
+        <collection name="xml-doc-comment">
+            <include syntax="self" collection="xml-comment" />
+            <include syntax="self" collection="xml-character-entity" />
+            <include syntax="self" collection="xml-cdata" />
+            <include syntax="self" collection="xml-tag" />
+        </collection>
+        <collection name="xml-string">
+            <scope name="source.cs.string.quoted.single.cs">
+                <starts-with>
+                    <expression>\&apos;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\&apos;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="xml-character-entity" />
+                </subscopes>
+            </scope>
+            <scope name="source.cs.string.quoted.double.cs">
+                <starts-with>
+                    <expression>\&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.begin.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>\&quot;</expression>
+                    <capture number="0" name="source.cs.punctuation.definition.string.end.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="xml-character-entity" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="xml-tag">
+            <scope name="source.cs.meta.tag.cs">
+                <starts-with>
+                    <expression>(?x)
+(&lt;/?)
+(
+  (?:
+    ([-_[:alnum:]]+)
+    (:)
+  )?
+  ([-_[:alnum:]]+)
+)</expression>
+                    <capture number="1" name="source.cs.punctuation.definition.tag.cs" />
+                    <capture number="2" name="source.cs.tag.cs" />
+                    <capture number="3" name="source.cs.tag.namespace.cs" />
+                    <capture number="4" name="source.cs.punctuation.separator.colon.cs" />
+                    <capture number="5" name="source.cs.tag.localname.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(/?&gt;)</expression>
+                    <capture number="1" name="source.cs.punctuation.definition.tag.cs" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="xml-attribute" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="yield-break-statement">
+            <scope>
+                <expression>(?&lt;!\.)\b(yield)\b\s*\b(break)\b</expression>
+                <capture number="1" name="source.cs.keyword.control.flow.yield.cs" />
+                <capture number="2" name="source.cs.keyword.control.flow.break.cs" />
+            </scope>
+        </collection>
+        <collection name="yield-return-statement">
+            <scope>
+                <starts-with>
+                    <expression>(?&lt;!\.)\b(yield)\b\s*\b(return)\b</expression>
+                    <capture number="1" name="source.cs.keyword.control.flow.yield.cs" />
+                    <capture number="2" name="source.cs.keyword.control.flow.return.cs" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?=;)</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="expression" />
+                </subscopes>
+            </scope>
+        </collection>
+        <collection name="yield-statement">
+            <include syntax="self" collection="yield-return-statement" />
+            <include syntax="self" collection="yield-break-statement" />
+        </collection>
+    </collections>
+</syntax>

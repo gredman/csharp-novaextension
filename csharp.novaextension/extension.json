@@ -1,0 +1,8 @@
+{
+    "identifier": "computer.gareth.csharp",
+    "name": "C#",
+    "organization": "Gareth Redman",
+    "description": "Syntax highlighting for C#",
+    "version": "1.0",
+    "categories": ["languages"]
+}
