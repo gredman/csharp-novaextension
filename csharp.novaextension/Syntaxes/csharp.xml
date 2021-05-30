@@ -501,7 +501,7 @@
                         <starts-with>
                             <expression>(?x)
 \b(class)\b\s+
-(@?[_[:alpha:]][_[:alnum:]]*)\s*</expression>
+(@?[_[:alpha:]][_[:alnum:]]*)</expression>
                             <capture number="1" name="source.cs.keyword.other.class.cs" />
                             <capture number="2" name="source.cs.identifier.type.class.cs" />
                         </starts-with>
