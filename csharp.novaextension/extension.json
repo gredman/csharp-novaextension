@@ -3,7 +3,7 @@
     "name": "C#",
     "organization": "Gareth Redman",
     "description": "Syntax highlighting for C#",
-    "version": "1.1",
+    "version": "1.1.1",
     "categories": ["languages"],
     "bugs": "https://github.com/gredman/csharp-novaextension/issues",
     "homepage": "https://github.com/gredman/csharp-novaextension",
