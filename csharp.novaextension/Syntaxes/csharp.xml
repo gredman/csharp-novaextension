@@ -1965,7 +1965,7 @@
                     <capture number="1" name="source.cs.keyword.other.namespace.cs" />
                 </starts-with>
                 <ends-with>
-                    <expression>(?&lt;=\})</expression>
+                    <expression>(?&lt;=\}|;)</expression>
                 </ends-with>
                 <subscopes>
                     <scope name="source.cs.identifier.type.namespace.cs">
