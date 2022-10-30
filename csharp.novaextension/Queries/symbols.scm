@@ -41,6 +41,23 @@
  (#set! role enum)
  ) @subtree
 
+(property_declaration
+ name: (identifier) @name
+ (#set! role property)
+ ) @subtree
+
+(field_declaration
+ (variable_declaration
+  (variable_declarator
+   (identifier))) @name
+ (#set! role variable)
+ ) @subtree
+
+(enum_member_declaration
+ name: (identifier) @name
+ (#set! role enum-member)
+ ) @subtree
+
 ; (object_creation_expression
 ;  type: (identifier) @name
 ;  ) @reference.class
