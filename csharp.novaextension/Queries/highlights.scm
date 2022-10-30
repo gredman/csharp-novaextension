@@ -1,25 +1,27 @@
 ;; Methods
-(method_declaration (identifier) @type (identifier) @function)
+(method_declaration (identifier) @identifier.type (identifier) @identifier.method)
 
 ;; Types
-(interface_declaration name: (identifier) @type)
-(class_declaration name: (identifier) @type)
-(enum_declaration name: (identifier) @type)
-(struct_declaration (identifier) @type)
-(record_declaration (identifier) @type)
-(record_struct_declaration (identifier) @type)
-(namespace_declaration name: (identifier) @type)
+(interface_declaration name: (identifier) @definition.protocol)
+(class_declaration name: (identifier) @definition.class)
+(enum_declaration name: (identifier) @definition.enum)
+(struct_declaration (identifier) @definition.struct)
+(record_declaration (identifier) @definition.struct)
+(record_struct_declaration (identifier) @definition.struct)
+(namespace_declaration name: (identifier) @definition)
 
-(constructor_declaration name: (identifier) @type)
-(destructor_declaration name: (identifier) @type)
+(constructor_declaration name: (identifier) @definition)
+(destructor_declaration name: (identifier) @definition)
 
 [
-  (implicit_type)
+
   (nullable_type)
   (pointer_type)
   (function_pointer_type)
   (predefined_type)
-] @type.builtin
+] @identifier.type
+
+(implicit_type) @keyword
 
 ;; Enum
 (enum_member_declaration (identifier) @property.definition)
@@ -28,35 +30,36 @@
 [
   (real_literal)
   (integer_literal)
-] @number
+] @value.number
 
 [
   (character_literal)
   (string_literal)
   (verbatim_string_literal)
-  (interpolated_string_text)
-  (interpolated_verbatim_string_text)
   "\""
   "$\""
   "@$\""
   "$@\""
  ] @string
 
-[
-  (boolean_literal)
-  (null_literal)
-  (void_keyword)
-] @constant.builtin
+ [
+  (interpolated_string_text)
+  (interpolated_verbatim_string_text)
+] @string-template
+
+(boolean_literal) @value.boolean
+(null_literal) @value.null
+(void_keyword) @keyword
 
 ;; Comments
 (comment) @comment
 
-;; Tokens
-[
-  ";"
-  "."
-  ","
-] @punctuation.delimiter
+; ;; Tokens
+; [
+;   ";"
+;   "."
+;   ","
+; ] @punctuation.delimiter
 
 [
   "--"
@@ -95,11 +98,11 @@
   "]"
   "{"
   "}"
-]  @punctuation.bracket
+]  @bracket
 
 ;; Keywords
-(modifier) @keyword
-(this_expression) @keyword
+(modifier) @keyword.modifier
+(this_expression) @keyword.self
 (escape_sequence) @keyword
 
 [
@@ -161,80 +164,80 @@
 
 
 ;; Linq
-(from_clause (identifier) @variable)
+(from_clause (identifier) @identifier.variable)
 (group_clause)
 (order_by_clause)
-(select_clause (identifier) @variable)
-(query_continuation (identifier) @variable) @keyword
+(select_clause (identifier) @identifier.variable)
+(query_continuation (identifier) @identifier.variable) @keyword
 
 ;; Record
 (with_expression
   (with_initializer_expression
     (simple_assignment_expression
-      (identifier) @variable)))
+      (identifier) @identifier.variable)))
 
 ;; Exprs
-(binary_expression (identifier) @variable (identifier) @variable)
-(binary_expression (identifier)* @variable)
-(conditional_expression (identifier) @variable)
-(prefix_unary_expression (identifier) @variable)
-(postfix_unary_expression (identifier)* @variable)
-(assignment_expression (identifier) @variable)
-(cast_expression (identifier) @type (identifier) @variable)
+(binary_expression (identifier) @identifier.variable (identifier) @identifier.variable)
+(binary_expression (identifier)* @identifier.variable)
+(conditional_expression (identifier) @identifier.variable)
+(prefix_unary_expression (identifier) @identifier.variable)
+(postfix_unary_expression (identifier)* @identifier.variable)
+(assignment_expression (identifier) @identifier.variable)
+(cast_expression (identifier) @identifier.type (identifier) @identifier.variable)
 
 ;; Class
-(base_list (identifier) @type)
+(base_list (identifier) @identifier.type)
 (property_declaration (generic_name))
 (property_declaration
-  type: (nullable_type) @type
-  name: (identifier) @variable)
+  type: (nullable_type) @identifier.type
+  name: (identifier) @identifier.property)
 (property_declaration
-  type: (predefined_type) @type
-  name: (identifier) @variable)
+  type: (predefined_type) @identifier.type
+  name: (identifier) @identifier.property)
 (property_declaration
-  type: (identifier) @type
-  name: (identifier) @variable)
+  type: (identifier) @identifier.type
+  name: (identifier) @identifier.property)
 
 ;; Lambda
-(lambda_expression) @variable
+(lambda_expression) @identifier.variable
 
 ;; Attribute
-(attribute) @type
+(attribute) @identifier.type
 
 ;; Parameter
 (parameter
-  type: (identifier) @type
-  name: (identifier) @variable.parameter)
-(parameter (identifier) @variable.parameter)
-(parameter_modifier) @keyword
+  type: (identifier) @identifier.type
+  name: (identifier) @identifier.argument)
+(parameter (identifier) @identifier.argument)
+(parameter_modifier) @keyword.modifier
 
 ;; Typeof
-(type_of_expression (identifier) @type)
+(type_of_expression (identifier) @identifier.type)
 
 ;; Variable
-(variable_declaration (identifier) @type)
-(variable_declarator (identifier) @variable)
+(variable_declaration (identifier) @identifier.type)
+(variable_declarator (identifier) @identifier.variable)
 
 ;; Return
-(return_statement (identifier) @variable)
-(yield_statement (identifier) @variable)
+(return_statement (identifier) @identifier.variable)
+(yield_statement (identifier) @identifier.variable)
 
 ;; Type
-(generic_name (identifier) @type)
+(generic_name (identifier) @identifier.type)
 (type_parameter (identifier) @property.definition)
-(type_argument_list (identifier) @type)
+(type_argument_list (identifier) @identifier.type)
 
 ;; Type constraints
 (type_parameter_constraints_clause (identifier) @property.definition)
-(type_constraint (identifier) @type)
+(type_constraint (identifier) @identifier.type)
 
 ;; Exception
-(catch_declaration (identifier) @type (identifier) @variable)
-(catch_declaration (identifier) @type)
+(catch_declaration (identifier) @identifier.type (identifier) @variable)
+(catch_declaration (identifier) @identifier.type)
 
 ;; Switch
-(switch_statement (identifier) @variable)
-(switch_expression (identifier) @variable)
+(switch_statement (identifier) @identifier.variable)
+(switch_expression (identifier) @identifier.variable)
 
 ;; Lock statement
-(lock_statement (identifier) @variable)
+(lock_statement (identifier) @identifier.variable)
