@@ -6,7 +6,7 @@
 (class_declaration name: (identifier) @definition.class)
 (enum_declaration name: (identifier) @definition.enum)
 (struct_declaration (identifier) @definition.struct)
-(record_declaration (identifier) @definition.struct)
+(record_declaration (identifier) @definition.class)
 (record_struct_declaration (identifier) @definition.struct)
 (namespace_declaration name: (identifier) @definition)
 

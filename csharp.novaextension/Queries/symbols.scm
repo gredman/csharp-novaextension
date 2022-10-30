@@ -21,6 +21,26 @@
  (#set! role method)
  ) @subtree
 
+(struct_declaration
+ name: (identifier) @name
+ (#set! role struct)
+ ) @subtree
+
+(record_declaration
+ name: (identifier) @name
+ (#set! role class)
+ ) @subtree
+
+(record_struct_declaration
+ name: (identifier) @name
+ (#set! role struct)
+ ) @subtree
+
+(enum_declaration
+ name: (identifier) @name
+ (#set! role enum)
+ ) @subtree
+
 ; (object_creation_expression
 ;  type: (identifier) @name
 ;  ) @reference.class
