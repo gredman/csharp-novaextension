@@ -21,6 +21,16 @@
  (#set! role method)
  ) @subtree
 
+(constructor_declaration
+ name: (identifier) @name
+ (#set! role constructor)
+ ) @subtree
+
+(destructor_declaration
+ name: (identifier) @name
+ (#set! role destructor)
+ ) @subtree
+
 (struct_declaration
  name: (identifier) @name
  (#set! role struct)
