@@ -45,5 +45,6 @@
     </indentation>
     <tree-sitter language="c_sharp">
         <highlights />
+        <symbols />
     </tree-sitter>
 </syntax>
