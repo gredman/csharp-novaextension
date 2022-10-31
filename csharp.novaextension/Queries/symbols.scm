@@ -59,7 +59,7 @@
 (field_declaration
  (variable_declaration
   (variable_declarator
-   (identifier))) @name
+   (identifier) @name))
  (#set! role variable)
  ) @subtree
 
