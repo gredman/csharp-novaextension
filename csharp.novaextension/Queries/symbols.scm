@@ -18,16 +18,19 @@
 
 (method_declaration
  name: (identifier) @name
+ parameters: (_) @name
  (#set! role method)
  ) @subtree
 
 (constructor_declaration
  name: (identifier) @name
+ parameters: (_) @name
  (#set! role constructor)
  ) @subtree
 
 (destructor_declaration
  name: (identifier) @name
+ parameters: (_) @name
  (#set! role destructor)
  ) @subtree
 
