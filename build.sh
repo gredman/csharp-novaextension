@@ -1,11 +1,11 @@
 #!/bin/zsh
-set -e
+set -ex
 
 APPBUNDLE=/Applications/Nova.app
 
-MAKEFILE="$( pwd )/Makefile"
-BASEDIR="$( pwd )/tree-sitter-c-sharp"
-EXTENSIONDIR="$( pwd )/csharp.novaextension"
+MAKEFILE="${PWD}/Makefile"
+BASEDIR="${PWD}/tree-sitter-c-sharp"
+TARGETLIB="${PWD}/csharp.novaextension/Syntaxes/libtree-sitter-c_sharp.dylib"
 
 FRAMEWORKS_PATH="$APPBUNDLE/Contents/Frameworks/"
 
@@ -23,7 +23,8 @@ CFLAGS="${BUILD_FLAGS} -O3" \
     LDFLAGS="${BUILD_FLAGS} -F${FRAMEWORKS_PATH} -framework SyntaxKit -rpath @loader_path/../Frameworks" \
     PREFIX="$TMP_BUILD_DIR" make all -f "$MAKEFILE"
 
-cp -f "$BASEDIR/libtree-sitter-c.dylib" "$EXTENSIONDIR/Syntaxes/libtree-sitter-c_sharp.dylib"
-echo copied library to $EXTENSIONDIR/Syntaxes
+cp -f "$BASEDIR/libtree-sitter-c.dylib" "$TARGETLIB"
 
 popd
+
+codesign -s - "$TARGETLIB"
